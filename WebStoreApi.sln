@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebStoreApi", "WebStoreApi\WebStoreApi.csproj", "{4AD9695D-1EB1-4C9E-94F8-B8B9D6C97E60}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebStoreApiTeste", "WebStoreApiTeste\WebStoreApiTeste.csproj", "{6BEEF58E-F10F-4189-83D0-80491FCC68C5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4AD9695D-1EB1-4C9E-94F8-B8B9D6C97E60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AD9695D-1EB1-4C9E-94F8-B8B9D6C97E60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AD9695D-1EB1-4C9E-94F8-B8B9D6C97E60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AD9695D-1EB1-4C9E-94F8-B8B9D6C97E60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BEEF58E-F10F-4189-83D0-80491FCC68C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BEEF58E-F10F-4189-83D0-80491FCC68C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BEEF58E-F10F-4189-83D0-80491FCC68C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BEEF58E-F10F-4189-83D0-80491FCC68C5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0AEBBF88-F169-4063-BB61-171A4CD89CD3}
+	EndGlobalSection
+EndGlobal

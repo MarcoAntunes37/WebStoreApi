@@ -28,6 +28,7 @@ namespace WebStoreApi.Controllers
         public async Task<IActionResult> Authenticate(AuthenticateRequest model)
         {
             var response = _usersService.Authenticate(model);
+
             return Ok(response);
         }
 

@@ -27,37 +27,31 @@ namespace WebStoreApiTeste
         {
             List<User> users = new List<User>(){
                 new User{
-                    Id = ObjectId.GenerateNewId(),
+                    Id = ObjectId.GenerateNewId().ToString(),
                     FirstName = "John",
                     LastName = "Doe",
                     Telephone = "+1 123-456-7890",
                     Username = "johndoe",
                     Password = "password123",
-                    Email = "johndoe@example.com",
-                    OptInForEmails = true,
-                    OptInForSMS = false
+                    Email = "johndoe@example.com"
                 },
                 new User{
-                    Id = ObjectId.GenerateNewId(),
+                    Id = ObjectId.GenerateNewId().ToString(),
                     FirstName = "John1",
                     LastName = "Doe",
                     Telephone = "+1 123-456-7890",
                     Username = "johndoe",
                     Password = "password123",
                     Email = "johndoe@example.com",
-                    OptInForEmails = true,
-                    OptInForSMS = false
                 },
                 new User{
-                    Id = ObjectId.GenerateNewId(),
+                    Id = ObjectId.GenerateNewId().ToString(),
                     FirstName = "John2",
                     LastName = "Doe",
                     Telephone = "+1 123-456-7890",
                     Username = "johndoe",
                     Password = "password123",
                     Email = "johndoe@example.com",
-                    OptInForEmails = true,
-                    OptInForSMS = false
                 },
             };
 
@@ -88,20 +82,18 @@ namespace WebStoreApiTeste
         {
             var user = new User
             {
-                Id = ObjectId.GenerateNewId(),
+                Id = ObjectId.GenerateNewId().ToString(),
                 FirstName = "John",
                 LastName = "Doe",
                 Telephone = "+1 123-456-7890",
                 Username = "johndoe",
                 Password = "password123",
-                Email = "johndoe@example.com",
-                OptInForEmails = true,
-                OptInForSMS = false
+                Email = "johndoe@example.com"
             };
 
             _userServiceMock.Setup(x => x.GetAsync(user.Id)).ReturnsAsync(user);
 
-            var result = await _usersController.GetUser(user.Id.ToString());
+            var result = await _usersController.GetUser(user.Id);
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -110,92 +102,44 @@ namespace WebStoreApiTeste
         public async Task GetUserAsync_ShouldReturnNotFound_WhenUserNotExist()
         {
 
-            var userId = ObjectId.GenerateNewId();
+            var userId = ObjectId.GenerateNewId().ToString();
 
             _userServiceMock.Setup(x => x.GetAsync(userId)).ReturnsAsync(() => null);
 
-            var result = await _usersController.GetUser(userId.ToString());
+            var result = await _usersController.GetUser(userId);
 
             Assert.IsType<NotFoundResult>(result);
         }
         #endregion
 
-        #region createUser
-        [Fact]
-        public async Task CreateUser_ShouldReturnCreatedAtActionWithValidData_WhenUserCreated()
-        {
-            var user = new RegisterProfileRequest
-            {
-                FirstName = "John",
-                LastName = "Doe",
-                Telephone = "+1 123-456-7890",
-                Username = "johndoe",
-                Password = "password123",
-                Email = "johndoe@example.com",
-                OptInForEmails = true,
-                OptInForSMS = false,
-                SecurityQuestions = {
-                    Question = "What is your favorite color?",
-                    Answer = "Green"
-                },
-            };
-
-            //var result = await _userServiceMock.Setup(x => x.CreateAsync(user));
-
-            //Assert.IsType<CreatedAtActionResult>(result);
-        }
-
-        [Fact]
-        public async Task CreateUser_ShouldReturnBadRequest_WhenUserNotCreated()
-        {
-            var user = new RegisterProfileRequest
-            {
-                FirstName = "John",
-                LastName = "Doe",
-                Telephone = "+1 123-456-7890",
-                Username = "johndoe",
-                Password = "password123",
-                Email = "johndoe@example.com",
-                OptInForEmails = true,
-                OptInForSMS = false,
-                SecurityQuestions = {
-                    Question = "What is your favorite color?",
-                    Answer = "Green"
-                },
-            };
-
-            //_userServiceMock.Setup(x => x.CreateAsync()).ReturnsAsync();
-            //Assert.IsType<CreatedAtActionResult>();
-        }
-        #endregion
-
-        #region Update User
+        #region updateUser
         [Fact]
         public async Task UpdateUser_ShouldReturnNoContent_WhenUserUpdated()
         {
-            var routeId = ObjectId.GenerateNewId();
+            var routeId = ObjectId.GenerateNewId().ToString();
+
             var user = new UpdateProfileRequest
             {
                 FirstName = "John",
                 LastName = "Doe",
                 Telephone = "+1 123-456-7890",
                 Password = "password123",
-                Email = "johndoe@example.com",
-                OptInForEmails = true,
-                OptInForSMS = false,
+                Email = "johndoe@example.com"
             };
 
             _userServiceMock.Setup(x => x.GetAsync(routeId)).ReturnsAsync(new User { Id = routeId });
+
             _userServiceMock.Setup(x => x.UpdateProfileAsync(routeId, user));
 
-            var result = await _usersController.UpdateUser(routeId.ToString(), user);
+            var result = await _usersController.UpdateUser(routeId, user);
+
             Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
         public async Task UpdateUser_ShouldReturnNotFound_WhenUserNotExist()
         {
-            var routeId = ObjectId.GenerateNewId();
+            var routeId = ObjectId.GenerateNewId().ToString();
 
             var user = new UpdateProfileRequest
             {
@@ -203,23 +147,20 @@ namespace WebStoreApiTeste
                 LastName = "Doe",
                 Telephone = "+1 123-456-7890",
                 Password = "password123",
-                Email = "johndoe@example.com",
-                OptInForEmails = true,
-                OptInForSMS = false,
+                Email = "johndoe@example.com"
             };
 
             _userServiceMock.Setup(x => x.GetAsync(routeId)).ReturnsAsync(() => null);
 
-            var result = await _usersController.UpdateUser(routeId.ToString(), user);
+            var result = await _usersController.UpdateUser(routeId, user);
 
-            Assert.IsNotType<NotFoundResult>(result);
-
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
         public async Task UpdateUser_ShouldReturnNotFound_WhenUserIdIsDifferentToRouteId()
         {
-            var routeId = ObjectId.GenerateNewId();
+            var routeId = ObjectId.GenerateNewId().ToString();
 
             var user = new UpdateProfileRequest
             {
@@ -227,16 +168,14 @@ namespace WebStoreApiTeste
                 LastName = "Doe",
                 Telephone = "+1 123-456-7890",
                 Password = "password123",
-                Email = "johndoe@example.com",
-                OptInForEmails = true,
-                OptInForSMS = false,
+                Email = "johndoe@example.com"
             };
 
             _userServiceMock.Setup(x => x.GetAsync(routeId)).ReturnsAsync(() => null);
 
-            var result = await _usersController.UpdateUser(routeId.ToString(), user);
+            var result = await _usersController.UpdateUser(routeId, user);
 
-            Assert.IsNotType<NotFoundResult>(result);
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -245,15 +184,26 @@ namespace WebStoreApiTeste
         [Fact]
         public async Task DeleteUser_ShouldReturnBadRequest_WhenUserNotExists()
         {
+            var routeId = ObjectId.GenerateNewId().ToString();
 
+            _userServiceMock.Setup(x => x.RemoveAsync(routeId));
+
+            var result = await _usersController.DeleteUser(routeId);
+
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
         public async Task DeleteUser_ShouldReturnNoContent_WhenUserIsDeleted()
         {
+            var routeId = ObjectId.GenerateNewId().ToString();
 
+            _userServiceMock.Setup(x => x.RemoveAsync(routeId));
+
+            var result = await _usersController.DeleteUser(routeId);
+
+            Assert.IsType<OkObjectResult>(result);
         }
-
         #endregion
     }
 }

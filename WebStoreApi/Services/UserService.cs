@@ -1,16 +1,16 @@
 ﻿using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using BCryptNet = BCrypt.Net.BCrypt;
 using MongoDB.Driver;
 using WebStoreApi.Collections;
 using WebStoreApi.Helpers;
 using WebStoreApi.Collections.ViewModels.Users.Authorization;
-using WebStoreApi.Authorization;
 using AutoMapper;
-using System.Security.Claims;
 using WebStoreApi.Collections.ViewModels.Users.Register;
 using WebStoreApi.Collections.ViewModels.Users.Update;
-using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace WebStoreApi.Services
 {
@@ -18,69 +18,76 @@ namespace WebStoreApi.Services
     {
         Task<AuthenticateResponse> Authenticate(AuthenticateRequest model);
         Task<List<User>> GetAsync();
-        Task<User> GetAsync(ObjectId id);
+        Task<User> GetAsync(string id);
         Task CreateAsync(RegisterProfileRequest model);
-        Task UpdateProfileAsync(ObjectId id, UpdateProfileRequest model);
-        Task RemoveAsync(ObjectId id);        
-        Task <User>GetByUsername(string username);
+        Task UpdateProfileAsync(string id, UpdateProfileRequest model);
+        Task RemoveAsync(string id);
     }
 
     public class UsersService : IUsersService
     {
         private readonly IMongoCollection<User> _usersCollection;
-        private IJwtUtils _jwtUtils;
+
         private readonly IMapper _mapper;
 
+        private readonly IConfiguration _configuration;
+
+
         public UsersService(IOptions<WebStoreDatabaseSettings> webStoreDatabaseSettings,
-            IJwtUtils jwtUtils,
-            IMapper mapper)
+            IMapper mapper,
+            IConfiguration configuration)
         {
             var mongoClient = new MongoClient(webStoreDatabaseSettings.Value.ConnectionString);
 
             var mongoDatabase = mongoClient.GetDatabase(webStoreDatabaseSettings.Value.DatabaseName);
 
-            _usersCollection = mongoDatabase.GetCollection<User>(webStoreDatabaseSettings.Value.UsersCollectionName);
-
-            _jwtUtils = jwtUtils;
+            _usersCollection = mongoDatabase.GetCollection<User>(webStoreDatabaseSettings
+                .Value.UsersCollectionName);
 
             _mapper = mapper;
+
+            _configuration = configuration;
         }
 
         #region Authentication
         public async Task<AuthenticateResponse> Authenticate(AuthenticateRequest model)
         {
-            var user = await _usersCollection.Find(x => x.Username == model.Username).FirstOrDefaultAsync();
+            var user = await _usersCollection.Find(x => x.Username == model.Username)
+                .FirstOrDefaultAsync();
 
             if (user == null || !BCryptNet.Verify(model.Password, user.Password))
                 throw new Exception("Username or password is incorrect");
 
-            var claims = new List<Claim>
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var secret = Encoding.UTF8.GetBytes(_configuration["JsonWebToken:Secret"]);
+
+            var tokenDescr = new SecurityTokenDescriptor
             {
-                new Claim(ClaimTypes.Name, user.Username)
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    //new Claim(ClaimTypes.Role, )
+                }),
+                Expires = DateTime.UtcNow.AddDays(5),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secret),
+                    SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var accessToken = _jwtUtils.GenerateAccessToken(claims);
-            
+            var token = tokenHandler.CreateToken(tokenDescr);
 
-            user.RefreshToken = accessToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            var tokenR = tokenHandler.WriteToken(token);
+
+            var update = Builders<User>.Update.Set(x => x.Token, tokenR);
+
+            await _usersCollection.UpdateOneAsync(x => x.Id == user.Id, update);
+
             var response = _mapper.Map<AuthenticateResponse>(user);
 
+            response.Token = tokenR;
+
             return response;
-        }
-
-        public async Task UpdateRefreshToken(string username, string refreshToken, DateTime refreshTokenExpire)
-        {
-            var existingUser = await _usersCollection.Find(x => x.Username == username).FirstOrDefaultAsync();
-
-            if (existingUser == null)
-                throw new Exception("User not found");
-
-            existingUser.RefreshToken = refreshToken;
-
-            existingUser.RefreshTokenExpiryTime = refreshTokenExpire;
-
-            await _usersCollection.ReplaceOneAsync(x => x.Username == username, existingUser);
         }
         #endregion
 
@@ -95,7 +102,7 @@ namespace WebStoreApi.Services
             return users;
         }
 
-        public async Task<User> GetAsync(ObjectId id)
+        public async Task<User> GetAsync(string id)
         {
             var existingUser = await _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
@@ -105,9 +112,9 @@ namespace WebStoreApi.Services
             return existingUser;
         }
 
-        public async Task RemoveAsync(ObjectId id)
+        public async Task RemoveAsync(string id)
         {
-            var existingUser = _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+            var existingUser = await _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
             if (existingUser == null)
                 throw new Exception("User not found");
@@ -129,94 +136,49 @@ namespace WebStoreApi.Services
         #region User Profile
         public async Task CreateAsync(RegisterProfileRequest model)
         {
-            var existingUser = await _usersCollection.Find(x => x.Email == model.Email 
-            || x.Username == model.Username).FirstOrDefaultAsync();            
+            var existingUser = await _usersCollection.Find(x => x.Email == model.Email || x.Username == model.Username)
+                .FirstOrDefaultAsync();
 
-            if (existingUser != null)            
-                throw new Exception("Email or username is already in use");
+            if (existingUser != null)
+            {
+                throw new Exception("Username or email is already in use");
+            }
 
             if (model.Password != model.ConfirmPassword)
                 throw new Exception("Password and confirm password must be the same");
 
-            var user = _mapper.Map<User>(model);
 
             model.Password = BCryptNet.HashPassword(model.Password, BCryptNet.GenerateSalt(12));
+
+            var user = _mapper.Map<User>(model);
 
             await _usersCollection.InsertOneAsync(user);
         }
 
-        public async Task UpdateProfileAsync(ObjectId id, UpdateProfileRequest model)
+        public async Task UpdateProfileAsync(string id, UpdateProfileRequest model)
         {
-            var existingUser = await _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+            var user = await _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
-            if (existingUser == null)
+            if (user == null)
                 throw new Exception("User not found.");
-            
-            var duplicateUser = await _usersCollection.Find(x => (x.Email == model.Email) && x.Id != id).FirstOrDefaultAsync();
 
-            if (duplicateUser != null)
-                throw new Exception("Email is already in use by another user.");            
+            var existingUser = await _usersCollection.Find(x => (x.Email == model.Email) && x.Id != id)
+                .FirstOrDefaultAsync();
+
+            if (existingUser != null)
+                throw new Exception("Email is already in use by another user.");
 
             if (model.Password != model.ConfirmPassword)
                 throw new Exception("Password and confirm password must be the same");
 
-            if (!string.IsNullOrEmpty(model.Password))
-                existingUser.Password = BCryptNet.HashPassword(model.Password, BCryptNet.GenerateSalt(12));
+            var hashed = BCryptNet.HashPassword(model.Password, BCryptNet.GenerateSalt(12));
 
-            _mapper.Map(model, existingUser);
+            if (hashed != user.Password)
+                model.Password = hashed;
 
-            await _usersCollection.ReplaceOneAsync(x => x.Id == id, existingUser);
-        }
-        #endregion
+            _mapper.Map(model, user);
 
-        #region User Adress
-        private async Task UpdateAdressAsync(ObjectId id, UpdateAddressRequest model)
-        {
-            var existingUser = await _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
-
-            if (existingUser == null) 
-                throw new Exception("User not found");
-
-            var filter = Builders<User>.Filter.Eq("_id", id);
-
-            Address newAddress = new Address
-            {
-                Street = model.Street,
-                City = model.City,
-                State = model.State,
-                PostalCode = model.PostalCode
-            };
-
-            var update = Builders<User>.Update.Set(u => u.BillingAddress, newAddress)
-                                          .Set(u => u.ShippingAddress, newAddress);
-
-
-            await _usersCollection.UpdateOneAsync(filter, update) ;
-        }
-
-        #endregion
-
-        #region User Payment Data
-        private async Task UpdateCCInfoAsync(ObjectId id, UpdateCCInfoRequest model)
-        {
-            var existingUser = await _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
-
-            if (existingUser == null)
-                throw new Exception("User not found");
-
-            var filter = Builders<User>.Filter.Eq("_id", id);
-
-            PaymentInformation newPayment = new PaymentInformation
-            {
-                CreditCardNumber = model.CreditCardNumber,
-                ExpirationDate = model.ExpirationDate,
-                CVV = model.CVV,
-            };
-
-            var update = Builders<User>.Update.Set(u => u.PaymentInfo, newPayment);
-
-
-            await _usersCollection.UpdateOneAsync(filter, update);
+            await _usersCollection.ReplaceOneAsync(x => x.Id == id, user);
         }
         #endregion
     }

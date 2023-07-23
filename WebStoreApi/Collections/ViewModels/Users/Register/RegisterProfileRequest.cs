@@ -12,14 +12,5 @@ namespace WebStoreApi.Collections.ViewModels.Users.Register
         public string ConfirmPassword { get; set; }
         [EmailAddress]
         public string Email { get; set; }
-        public bool OptInForEmails { get; set; }
-        public bool OptInForSMS { get; set; }
-        public SecurityQuestion SecurityQuestions { get; set; }
-    }
-
-    public class SecurityQuestion
-    {
-        public string Question { get; set; }
-        public string Answer { get; set; }
     }
 }

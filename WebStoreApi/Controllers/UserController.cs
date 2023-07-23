@@ -1,18 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
-using WebStoreApi.Collections;
 using WebStoreApi.Services;
-using MongoDB.Bson;
-using BCrypt.Net;
-using Microsoft.AspNetCore.Authorization;
-using WebStoreApi.Collections.ViewModels.Users.Authorization;
-using System.Security.Claims;
 using WebStoreApi.Collections.ViewModels.Users.Register;
+using WebStoreApi.Collections.ViewModels.Users.Authorization;
 using WebStoreApi.Collections.ViewModels.Users.Update;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebStoreApi.Controllers
 {
-    [Authorize]
+    
     [Route("api/users")]
+    [Authorize]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -27,11 +24,11 @@ namespace WebStoreApi.Controllers
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate(AuthenticateRequest model)
         {
-            var response = _usersService.Authenticate(model);
+            var response = await _usersService.Authenticate(model);
 
             return Ok(response);
         }
-
+                
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
@@ -44,47 +41,33 @@ namespace WebStoreApi.Controllers
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(string id)
-        {
-            if (!ObjectId.TryParse(id, out ObjectId objectId))
-            {
-                return BadRequest("Invalid ID.");
-            }
+        {            
 
-            var response = await _usersService.GetAsync(objectId);
+            var response = await _usersService.GetAsync(id);
             if (response == null) return NotFound();
 
             return Ok(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser(RegisterProfileRequest newUser )
+        public async Task<IActionResult> CreateUser(RegisterProfileRequest userDto )
         {
-            await _usersService.CreateAsync(newUser);
-            return CreatedAtAction(nameof(GetUser), new {Username = newUser.Username}, newUser);
+            await _usersService.CreateAsync(userDto);
+            return Ok("User created successfully");
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(string id, UpdateProfileRequest updateUser)
-        {
-            if (!ObjectId.TryParse(id, out ObjectId objectId))
-            {
-                return BadRequest("Invalid ID.");
-            }
-            
-            await _usersService.UpdateProfileAsync(objectId, updateUser);
+        {            
+            await _usersService.UpdateProfileAsync(id, updateUser);
             return Ok("User updated successfully.");   
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            if (!ObjectId.TryParse(id, out ObjectId objectId))
-            {
-                return BadRequest("Invalid ID.");
-            }
-
-            await _usersService.RemoveAsync(objectId);
-            return NoContent();
+            await _usersService.RemoveAsync(id);
+            return Ok("User deleted successfully");
         }
     }
 }

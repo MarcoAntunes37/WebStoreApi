@@ -1,30 +1,18 @@
 ﻿using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using WebStoreApi.Collections;
-using System.Security.Claims;
 using WebStoreApi.Helpers;
 using AutoMapper;
-using System.Runtime.InteropServices;
 using WebStoreApi.Collections.ViewModels.Products.Register;
 using WebStoreApi.Collections.ViewModels.Products.Update;
+using WebStoreApi.Interfaces;
 
-namespace WebStoreApi.Services
-{
-    public interface IProductsService
-    {
-        Task<List<Product>> GetAsync();
-        Task<Product> GetAsync(ObjectId id);
-        Task CreateAsync(RegisterProductRequest model);
-        Task UpdateAsync(ObjectId id, UpdateProductRequest model);
-        Task RemoveAsync(ObjectId id);
-    }
-
+namespace WebStoreApi.Services 
+{ 
     public class ProductsService : IProductsService
     {
         private readonly IMongoCollection<Product> _productsColection;
-        private readonly IMapper _mapper;
-        
+        private readonly IMapper _mapper;        
 
         public ProductsService(IOptions<WebStoreDatabaseSettings> webStoreDatabaseSettings,
             IMapper mapper)
@@ -40,15 +28,15 @@ namespace WebStoreApi.Services
 
         public async Task<List<Product>> GetAsync()
         {
-            var product = await _productsColection.Find(_ => true).ToListAsync();
+            var products = await _productsColection.Find(_ => true).ToListAsync();
 
-            if (product == null)
+            if (products == null)
                 throw new Exception("No products found");
 
-            return product;
+            return products;
         }
 
-        public async Task<Product> GetAsync(ObjectId id)
+        public async Task<Product> GetAsync(string id)
         {
             var product = await _productsColection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
@@ -70,24 +58,24 @@ namespace WebStoreApi.Services
             await _productsColection.InsertOneAsync(product);
         }
 
-        public async Task UpdateAsync(ObjectId id, UpdateProductRequest model)
+        public async Task UpdateAsync(string id, UpdateProductRequest model)
         {
-            var existingProduct = await _productsColection.Find(x => x.Id == id).FirstOrDefaultAsync();
+            var product = await _productsColection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
-            if (existingProduct != null)
+            if (product == null)
                 throw new Exception("Product not found");
 
-            var duplicatedProduct = await _productsColection.Find(x => (x.Name == model.Name) && x.Id != id).FirstOrDefaultAsync();
+            var existingProduct = await _productsColection.Find(x => (x.Name == model.Name) && x.Id != id).FirstOrDefaultAsync();
 
-            if (duplicatedProduct != null)
+            if (existingProduct != null)
                 throw new Exception("Product name already taken");
 
-            _mapper.Map(model, existingProduct);
+            _mapper.Map(model, product);
 
-            await _productsColection.ReplaceOneAsync(x => x.Id == id, existingProduct);
+            await _productsColection.ReplaceOneAsync(x => x.Id == id, product);
         }
 
-        public async Task RemoveAsync(ObjectId id)
+        public async Task RemoveAsync(string id)
         {
             var product = _productsColection.Find(x => x.Id == id).FirstOrDefaultAsync();
 

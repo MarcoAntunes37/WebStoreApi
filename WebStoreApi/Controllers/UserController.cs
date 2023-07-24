@@ -4,6 +4,7 @@ using WebStoreApi.Collections.ViewModels.Users.Register;
 using WebStoreApi.Collections.ViewModels.Users.Authorization;
 using WebStoreApi.Collections.ViewModels.Users.Update;
 using Microsoft.AspNetCore.Authorization;
+using WebStoreApi.Interfaces;
 
 namespace WebStoreApi.Controllers
 {
@@ -21,12 +22,22 @@ namespace WebStoreApi.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("authenticate")]
+        [HttpPost("login")]
         public async Task<IActionResult> Authenticate(AuthenticateRequest model)
         {
-            var response = await _usersService.Authenticate(model);
+            var response = await _usersService.Login(model);
+
+            if (response == null) return NotFound();
 
             return Ok(response);
+        }
+
+        [HttpPost("logout/{id}")]
+        public async Task<IActionResult> Logout(string id)
+        {
+            await _usersService.Logout(id);
+
+            return Ok("User logout successfully");
         }
                 
         [HttpGet]
@@ -44,6 +55,7 @@ namespace WebStoreApi.Controllers
         {            
 
             var response = await _usersService.GetAsync(id);
+
             if (response == null) return NotFound();
 
             return Ok(response);
@@ -53,6 +65,7 @@ namespace WebStoreApi.Controllers
         public async Task<IActionResult> CreateUser(RegisterProfileRequest userDto )
         {
             await _usersService.CreateAsync(userDto);
+
             return Ok("User created successfully");
         }
 
@@ -60,6 +73,7 @@ namespace WebStoreApi.Controllers
         public async Task<IActionResult> UpdateUser(string id, UpdateProfileRequest updateUser)
         {            
             await _usersService.UpdateProfileAsync(id, updateUser);
+
             return Ok("User updated successfully.");   
         }
 
@@ -67,6 +81,7 @@ namespace WebStoreApi.Controllers
         public async Task<IActionResult> DeleteUser(string id)
         {
             await _usersService.RemoveAsync(id);
+
             return Ok("User deleted successfully");
         }
     }

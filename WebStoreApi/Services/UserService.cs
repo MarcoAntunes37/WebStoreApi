@@ -11,19 +11,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using WebStoreApi.Interfaces;
 
 namespace WebStoreApi.Services
 {
-    public interface IUsersService
-    {
-        Task<AuthenticateResponse> Authenticate(AuthenticateRequest model);
-        Task<List<User>> GetAsync();
-        Task<User> GetAsync(string id);
-        Task CreateAsync(RegisterProfileRequest model);
-        Task UpdateProfileAsync(string id, UpdateProfileRequest model);
-        Task RemoveAsync(string id);
-    }
-
     public class UsersService : IUsersService
     {
         private readonly IMongoCollection<User> _usersCollection;
@@ -50,7 +41,7 @@ namespace WebStoreApi.Services
         }
 
         #region Authentication
-        public async Task<AuthenticateResponse> Authenticate(AuthenticateRequest model)
+        public async Task<AuthenticateResponse> Login(AuthenticateRequest model)
         {
             var user = await _usersCollection.Find(x => x.Username == model.Username)
                 .FirstOrDefaultAsync();
@@ -67,8 +58,7 @@ namespace WebStoreApi.Services
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    //new Claim(ClaimTypes.Role, )
+                    new Claim(ClaimTypes.Email, user.Email)
                 }),
                 Expires = DateTime.UtcNow.AddDays(5),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secret),
@@ -88,6 +78,21 @@ namespace WebStoreApi.Services
             response.Token = tokenR;
 
             return response;
+        }
+
+        public async Task Logout(string id)
+        {
+            var user = await _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            if (user.Token != "" && user.Token != null)
+            {
+                var update = Builders<User>.Update.Set(x => x.Token, "");
+
+                await _usersCollection.UpdateOneAsync(x => x.Id == id, update);
+            }
         }
         #endregion
 

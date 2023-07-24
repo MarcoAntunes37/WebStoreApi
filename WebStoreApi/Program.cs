@@ -3,21 +3,22 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebStoreApi.Helpers;
+using WebStoreApi.Interfaces;
 using WebStoreApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.Configure<WebStoreDatabaseSettings>(builder.Configuration.GetSection("WebStoreDatabase"));
 builder.Services.AddAutoMapper(typeof(Program));
-builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddSingleton<IUsersService, UsersService>();
+builder.Services.AddSingleton<IProductsService, ProductsService>();
+builder.Services.AddSingleton<IOrdersService, OrdersService>();
 builder.Services.AddAuthorization();
 
 builder.Services.AddAuthentication(options =>
@@ -32,8 +33,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["JsonWebToken:Issuer"],
         ValidAudience = builder.Configuration["JsonWebToken:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JsonWebToken:Secret"])),
-        ValidateIssuer = true,
-        ValidateAudience = true,
+        ValidateIssuer = false,
+        ValidateAudience = false,
         ValidateLifetime = false,
         ValidateIssuerSigningKey = true
     };
@@ -42,7 +43,6 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -57,7 +57,7 @@ app.UseAuthorization();
 app.UseCors(x => x
                 .AllowAnyMethod()
                 .AllowAnyHeader()
-                .SetIsOriginAllowed(origin => true) // allow any origin
+                .SetIsOriginAllowed(origin => true) 
                 .AllowCredentials());
 
 app.MapControllers();

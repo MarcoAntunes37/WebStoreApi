@@ -8,6 +8,7 @@ using WebStoreApi.Services;
 using WebStoreApi.Collections;
 using WebStoreApi.Collections.ViewModels.Users.Register;
 using WebStoreApi.Collections.ViewModels.Users.Update;
+using WebStoreApi.Interfaces;
 
 namespace WebStoreApiTeste
 {
@@ -63,7 +64,7 @@ namespace WebStoreApiTeste
         }
 
         [Fact]
-        public async Task GetUsersAsync_ShouldReturnNotFound_WhenUserNotExist()
+        public async Task GetUsersAsync_ShouldReturnNotFound_WhenUsersNotExist()
         {
             List<User> users = null;
 

@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 # appSettings Dev ignore
 appsettings.Development.json
+/WebStoreApi/appsettings.Development.json

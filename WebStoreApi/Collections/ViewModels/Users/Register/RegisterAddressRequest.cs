@@ -1,6 +1,6 @@
-﻿namespace WebStoreApi.Collections.ViewModels.Users.Update
+﻿namespace WebStoreApi.Collections.ViewModels.Users.Register
 {
-    public class UpdateAddressRequest
+    public class RegisterAddressRequest
     {
         public string Street { get; set; }
         public string City { get; set; }

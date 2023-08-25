@@ -14,10 +14,19 @@ namespace WebStoreApi.Helpers
     {
         public AutomapperProfile() 
         {
-            //Mapping user
+            //Mapping user profile
             CreateMap<User, AuthenticateResponse>();
             CreateMap<RegisterProfileRequest, User>();
             CreateMap<UpdateProfileRequest, User>();
+            CreateMap<UpdatePasswordRequest, User>();
+
+            //Mapping user address
+            CreateMap<RegisterAddressRequest, Address>();
+            CreateMap<UpdateAddressRequest, Address>();
+
+            //Mapping user creditcard
+            CreateMap<RegisterCreditCardRequest, CreditCard>();
+            CreateMap<UpdateCreditCardRequest, CreditCard>();
 
             //Mapping product
             CreateMap<RegisterProductRequest, Product>();

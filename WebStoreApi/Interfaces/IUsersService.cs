@@ -17,7 +17,7 @@ namespace WebStoreApi.Interfaces
         Task RemoveAsync(string id);
         Task UpdatePasswordAsync(string userId, UpdatePasswordRequest model);
         Task InsertAddress(string userId, RegisterAddressRequest model);
-        Task UpdateAddress(string userId, string addressId, UpdateAddressRequest model);
+        Task UpdateAddress(string userId, UpdateAddressRequest model);
         Task DeleteAddress(string userId, string addressId);
         Task InsertCreditCard(string userId, RegisterCreditCardRequest model);       
         Task UpdateCreditCard(string userId, string creditCardId, UpdateCreditCardRequest model);

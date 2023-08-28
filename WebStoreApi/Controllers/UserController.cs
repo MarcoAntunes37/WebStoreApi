@@ -3,6 +3,7 @@ using WebStoreApi.Collections.ViewModels.Users.Register;
 using WebStoreApi.Collections.ViewModels.Users.Authorization;
 using WebStoreApi.Collections.ViewModels.Users.Update;
 using WebStoreApi.Interfaces;
+using MongoDB.Bson;
 
 namespace WebStoreApi.Controllers
 {
@@ -63,7 +64,7 @@ namespace WebStoreApi.Controllers
         {
             await _usersService.CreateAsync(userDto);
 
-            return Ok("User created successfully");
+            return Ok("User created successfully".ToJson());
         }
 
         [HttpPut("{id}")]
@@ -71,7 +72,7 @@ namespace WebStoreApi.Controllers
         {
             await _usersService.UpdateProfileAsync(id, updateUser);
 
-            return Ok("User updated successfully.");
+            return Ok("User updated successfully.".ToJson());
         }
 
         [HttpDelete("{id}")]
@@ -79,55 +80,55 @@ namespace WebStoreApi.Controllers
         {
             await _usersService.RemoveAsync(id);
 
-            return Ok("User deleted successfully");
+            return Ok("User deleted successfully".ToJson());
         }
         [HttpPut("{id}/password")]
         public async Task<IActionResult> UpdatePassword(string id, UpdatePasswordRequest updatePassword)
         {
             await _usersService.UpdatePasswordAsync(id, updatePassword);
-            return Ok("Password updated successfully");
+            return Ok("Password updated successfully".ToJson());
         }
 
         [HttpPost("{userId}/address")]
         public async Task<IActionResult> RegisterAddress(string userId, RegisterAddressRequest addressDto)
         {
             await _usersService.InsertAddress(userId, addressDto);
-            return Ok("Address created successfully");
+            return Ok("Address created successfully".ToJson());
         }
 
         [HttpPut("{userId}/address")]
-        public async Task<IActionResult> UpdateAddress(string userId, string addressId, UpdateAddressRequest updateAddress)
+        public async Task<IActionResult> UpdateAddress(string userId, UpdateAddressRequest updateAddress)
         {
-            await _usersService.UpdateAddress(userId, addressId, updateAddress);
-            return Ok("Address updated successfully");
+            await _usersService.UpdateAddress(userId, updateAddress);
+            return Ok("Address updated successfully".ToJson());
         }
 
         [HttpDelete("{userId}/address")]
         public async Task<IActionResult> DeleteAddress(string userId, string addressId)
         {
             await _usersService.DeleteAddress(userId, addressId);
-            return Ok("Address deleted successfully");
+            return Ok("Address deleted successfully".ToJson());
         }
 
         [HttpPost("{userId}/creditcard")]
         public async Task<IActionResult> RegisterCreditCard(string userId, RegisterCreditCardRequest creditCardDto)
         {
             await _usersService.InsertCreditCard(userId, creditCardDto);
-            return Ok("Credit card created successfully");
+            return Ok("Credit card created successfully".ToJson());
         }
 
         [HttpPut("{userId}/creditcard")]
         public async Task<IActionResult> UpdateCreditcard(string userId, string creditCardId, UpdateCreditCardRequest updateCreditCard)
         {
             await _usersService.UpdateCreditCard(userId, creditCardId, updateCreditCard);
-            return Ok("Credit card updated successfully");
+            return Ok("Credit card updated successfully".ToJson());
         }
 
         [HttpDelete("{userId}/creditcard")]
         public async Task<IActionResult> DeleteCreditCard(string userId, string creditCardId)
         {
             await _usersService.DeleteCreditCard(userId, creditCardId);
-            return Ok("Credit card deleted successfully");
+            return Ok("Credit card deleted successfully".ToJson());
         }
     }
 }

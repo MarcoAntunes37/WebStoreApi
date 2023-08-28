@@ -204,15 +204,15 @@ namespace WebStoreApi.Services
             await _usersCollection.ReplaceOneAsync(x => x.Id == userId, user);
         }
 
-        public async Task UpdateAddress(string userId, string addressId, UpdateAddressRequest model)
+        public async Task UpdateAddress(string userId, UpdateAddressRequest model)
         {
             var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
 
-            if (user == null) throw new Exception("User not found");
+            if (user == null) throw new Exception(message: "User not found");
 
-            var index = user.Addresses.FindIndex(a => a.Id == addressId);
+            var index = user.Addresses.FindIndex(a => a.Id == model.Id);
 
-            var address = user.Addresses.FirstOrDefault(address => address.Id == addressId);
+            var address = user.Addresses.FirstOrDefault(address => address.Id == model.Id);
 
             _mapper.Map(model, address);
 
@@ -227,7 +227,7 @@ namespace WebStoreApi.Services
         {
             var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
 
-            if (user == null) throw new Exception("User not found");
+            if (user == null) throw new Exception(message: "User not found");
 
             var address = user.Addresses.FirstOrDefault(x => x.Id == addressId);
 
@@ -240,7 +240,7 @@ namespace WebStoreApi.Services
         {
             var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
 
-            if (user == null) throw new Exception("User not found");
+            if (user == null) throw new Exception(message: "User not found");
 
             var creditCard = _mapper.Map<CreditCard>(model);
 
@@ -255,7 +255,7 @@ namespace WebStoreApi.Services
         {
             var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
 
-            if (user == null) throw new Exception("User not found");
+            if (user == null) throw new Exception(message: "User not found");
 
             var index = user.CreditCards.FindIndex(a => a.Id == creditCardId);
 
@@ -274,7 +274,7 @@ namespace WebStoreApi.Services
         {
             var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
 
-            if (user == null) throw new Exception("User not found");
+            if (user == null) throw new Exception(message: "User not found");
 
             var creditCard = user.CreditCards.FirstOrDefault(x => x.Id == creditCardId);
 

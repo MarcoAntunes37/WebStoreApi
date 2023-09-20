@@ -4,6 +4,7 @@ using WebStoreApi.Collections.ViewModels.Users.Authorization;
 using WebStoreApi.Collections.ViewModels.Users.Update;
 using WebStoreApi.Interfaces;
 using MongoDB.Bson;
+using WebStoreApi.Collections;
 
 namespace WebStoreApi.Controllers
 {
@@ -118,9 +119,9 @@ namespace WebStoreApi.Controllers
         }
 
         [HttpPut("{userId}/creditcard")]
-        public async Task<IActionResult> UpdateCreditcard(string userId, string creditCardId, UpdateCreditCardRequest updateCreditCard)
+        public async Task<IActionResult> UpdateCreditcard(string userId, UpdateCreditCardRequest updateCreditCard)
         {
-            await _usersService.UpdateCreditCard(userId, creditCardId, updateCreditCard);
+            await _usersService.UpdateCreditCard(userId, updateCreditCard);
             return Ok("Credit card updated successfully".ToJson());
         }
 
@@ -129,6 +130,27 @@ namespace WebStoreApi.Controllers
         {
             await _usersService.DeleteCreditCard(userId, creditCardId);
             return Ok("Credit card deleted successfully".ToJson());
+        }
+
+        [HttpPost("{userId}/shoppingcart")]
+        public async Task<IActionResult> RegisterShoppingCartItem(string userId, RegisterCartItemsRequest registerCartItem)
+        {
+            await _usersService.InsertShoppingCartItem(userId, registerCartItem);
+            return Ok("Item added to shopping cart successfully".ToJson());
+        }
+
+        [HttpPut("{userId}/shoppingcart")]
+        public async Task<IActionResult> UpdateShoppingCartItem(string userId, UpdateCartItemRequest updateShoppingCartItem)
+        {
+            await _usersService.UpdateShoppingCartItem(userId, updateShoppingCartItem);
+            return Ok("Item updated succesfully on shopping cart".ToJson());
+        }
+
+        [HttpDelete("{userId}/shoppingcart")]
+        public async Task<IActionResult> DeleteShoppingCartItem(string userId, string cartItemId)
+        {
+            await _usersService.DeleteShoppingCartItem(userId, cartItemId);
+            return Ok("Item deleted succesfully from shopping cart".ToJson());
         }
     }
 }

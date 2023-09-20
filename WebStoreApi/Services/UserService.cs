@@ -251,15 +251,15 @@ namespace WebStoreApi.Services
             await _usersCollection.ReplaceOneAsync(x => x.Id == userId, user);
         }
 
-        public async Task UpdateCreditCard(string userId, string creditCardId, UpdateCreditCardRequest model)
+        public async Task UpdateCreditCard(string userId, UpdateCreditCardRequest model)
         {
             var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
 
             if (user == null) throw new Exception(message: "User not found");
 
-            var index = user.CreditCards.FindIndex(a => a.Id == creditCardId);
+            var index = user.CreditCards.FindIndex(a => a.Id == model.Id);
 
-            var creditCard = user.CreditCards.FirstOrDefault(address => address.Id == creditCardId);
+            var creditCard = user.CreditCards.FirstOrDefault(address => address.Id == model.Id);
 
             _mapper.Map(model, creditCard);
 
@@ -283,5 +283,50 @@ namespace WebStoreApi.Services
             await _usersCollection.ReplaceOneAsync(x => x.Id == userId, user);
         }
 
+        public async Task InsertShoppingCartItem(string userId, RegisterCartItemsRequest model)
+        {
+            var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
+            
+            if (user == null) throw new Exception(message: "User not found");
+
+            var cartItem = _mapper.Map<ShoppingCartItem>(model);
+            cartItem.Id = new BsonObjectId(ObjectId.GenerateNewId()).ToString();
+
+            user.CartItems.Add(cartItem);
+
+            await _usersCollection.ReplaceOneAsync(x => x.Id == userId, user);
+        }
+
+        public async Task UpdateShoppingCartItem(string userId, UpdateCartItemRequest model)
+        {
+            var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
+
+            if (user == null) throw new Exception(message: "User not found");
+
+            var index = user.CartItems.FindIndex(a => a.Id == model.Id);
+
+            var sCart = user.CartItems.FirstOrDefault(address => address.Id == model.Id);
+
+            _mapper.Map(model, sCart);
+
+            user.CartItems.RemoveAt(index);
+
+            user.CartItems.Insert(index, sCart!);
+
+            await _usersCollection.ReplaceOneAsync(x => x.Id == userId, user);
+        }
+
+        public async Task DeleteShoppingCartItem(string userId, string cartItemId)
+        {
+            var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
+
+            if (user == null) throw new Exception(message: "User not found");
+
+            var sCart = user.CartItems.FirstOrDefault(x => x.Id == cartItemId);
+
+            user.CartItems.Remove(sCart!);
+
+            await _usersCollection.ReplaceOneAsync(x => x.Id == userId, user);
+        }
     }
 }

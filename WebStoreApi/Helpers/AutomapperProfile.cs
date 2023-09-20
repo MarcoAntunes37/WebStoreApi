@@ -32,6 +32,10 @@ namespace WebStoreApi.Helpers
             CreateMap<RegisterProductRequest, Product>();
             CreateMap<UpdateProductRequest, Product>();
 
+            //Mapping cartItem
+            CreateMap<RegisterCartItemsRequest, ShoppingCartItem>();
+            CreateMap<UpdateCartItemRequest, ShoppingCartItem>();
+
             //Mapping order
             CreateMap<RegisterOrderRequest, Order>();
             CreateMap<UpdateOrderRequest, Order>();

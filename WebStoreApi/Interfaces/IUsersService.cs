@@ -23,7 +23,6 @@ namespace WebStoreApi.Interfaces
         Task UpdateCreditCard(string userId, UpdateCreditCardRequest model);
         Task DeleteCreditCard(string userId, string creditCardId);
         Task InsertShoppingCartItem(string userId, RegisterCartItemsRequest model);
-        Task UpdateShoppingCartItem(string userId, UpdateCartItemRequest model);
         Task DeleteShoppingCartItem(string userId, string cartItemId);
     }
 }

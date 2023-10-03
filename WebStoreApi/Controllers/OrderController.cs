@@ -28,6 +28,16 @@ namespace WebStoreApi.Controllers
             return Ok(response);
         }
 
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetOrdersByUserId(string userId)
+        {
+            var response = await _orderService.GetAsyncByUserId(userId);
+
+            if (response == null) return NotFound();
+
+            return Ok(response);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrder(string id)
         {            

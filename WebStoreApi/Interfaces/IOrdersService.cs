@@ -7,6 +7,7 @@ namespace WebStoreApi.Interfaces
     public interface IOrdersService
     {
         Task<List<Order>> GetAsync();
+        Task<List<Order>> GetAsyncByUserId(string userId);
         Task<Order> GetAsync(string id);
         Task CreateAsync(RegisterOrderRequest model);
         Task UpdateAsync(string id, UpdateOrderRequest model);

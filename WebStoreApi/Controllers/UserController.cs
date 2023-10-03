@@ -139,13 +139,6 @@ namespace WebStoreApi.Controllers
             return Ok("Item added to shopping cart successfully".ToJson());
         }
 
-        [HttpPut("{userId}/shoppingcart")]
-        public async Task<IActionResult> UpdateShoppingCartItem(string userId, UpdateCartItemRequest updateShoppingCartItem)
-        {
-            await _usersService.UpdateShoppingCartItem(userId, updateShoppingCartItem);
-            return Ok("Item updated succesfully on shopping cart".ToJson());
-        }
-
         [HttpDelete("{userId}/shoppingcart")]
         public async Task<IActionResult> DeleteShoppingCartItem(string userId, string cartItemId)
         {

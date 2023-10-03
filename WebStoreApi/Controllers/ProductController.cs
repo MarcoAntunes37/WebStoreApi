@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using WebStoreApi.Interfaces;
 using WebStoreApi.Collections.ViewModels.Products.Register;
 using WebStoreApi.Collections.ViewModels.Products.Update;
@@ -7,8 +6,7 @@ using WebStoreApi.Collections.ViewModels.Products.Update;
 namespace WebStoreApi.Controllers
 {
     
-    [Route("api/products")]
-    
+    [Route("api/products")]    
     [ApiController]
     public class ProductController : ControllerBase
     {
@@ -29,10 +27,10 @@ namespace WebStoreApi.Controllers
             return Ok(response);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProduct(string id)
-        {            
-            var response = await _productService.GetAsync(id);
+        [HttpGet("target")]
+        public async Task<IActionResult> GetProductsFiltered([FromQuery] string keyword)
+        {
+            var response = await _productService.GetAsyncFiltered(keyword);
 
             if (response == null) return NotFound();
 

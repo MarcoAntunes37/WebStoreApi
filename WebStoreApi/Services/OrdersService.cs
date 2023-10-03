@@ -6,6 +6,7 @@ using AutoMapper;
 using WebStoreApi.Interfaces;
 using WebStoreApi.Collections.ViewModels.Orders.Register;
 using WebStoreApi.Collections.ViewModels.Orders.Update;
+using MongoDB.Bson;
 
 namespace WebStoreApi.Services
 {
@@ -46,6 +47,16 @@ namespace WebStoreApi.Services
                 throw new Exception("Order not found");
 
             return order;
+        }
+
+        public async Task<List<Order>> GetAsyncByUserId(string userId)
+        {
+            var orders = await _ordersColection.Find(x => x.UserId == userId).ToListAsync();
+
+            if (orders == null)
+                throw new Exception("No orders found");
+
+            return orders;
         }
 
         public async Task CreateAsync(RegisterOrderRequest model)

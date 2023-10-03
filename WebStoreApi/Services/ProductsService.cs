@@ -6,6 +6,9 @@ using AutoMapper;
 using WebStoreApi.Collections.ViewModels.Products.Register;
 using WebStoreApi.Collections.ViewModels.Products.Update;
 using WebStoreApi.Interfaces;
+using MongoDB.Bson;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace WebStoreApi.Services 
 { 
@@ -31,6 +34,22 @@ namespace WebStoreApi.Services
             var products = await _productsColection.Find(_ => true).ToListAsync();
 
             if (products == null)
+                throw new Exception("No products found");
+
+            return products;
+        }
+
+        public async Task<List<Product>> GetAsyncFiltered([FromQuery]string keyword)
+        {
+            var regex = new BsonRegularExpression(new Regex(keyword, RegexOptions.None));
+
+            var builder = Builders<Product>.Filter;
+
+            var filter = builder.Regex("Name", regex);
+                        
+            var products = await _productsColection.Find(filter).ToListAsync();
+
+            if (products.Count == 0)
                 throw new Exception("No products found");
 
             return products;

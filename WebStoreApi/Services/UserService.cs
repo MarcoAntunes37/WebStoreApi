@@ -297,25 +297,6 @@ namespace WebStoreApi.Services
             await _usersCollection.ReplaceOneAsync(x => x.Id == userId, user);
         }
 
-        public async Task UpdateShoppingCartItem(string userId, UpdateCartItemRequest model)
-        {
-            var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
-
-            if (user == null) throw new Exception(message: "User not found");
-
-            var index = user.CartItems.FindIndex(a => a.Id == model.Id);
-
-            var sCart = user.CartItems.FirstOrDefault(address => address.Id == model.Id);
-
-            _mapper.Map(model, sCart);
-
-            user.CartItems.RemoveAt(index);
-
-            user.CartItems.Insert(index, sCart!);
-
-            await _usersCollection.ReplaceOneAsync(x => x.Id == userId, user);
-        }
-
         public async Task DeleteShoppingCartItem(string userId, string cartItemId)
         {
             var user = await _usersCollection.Find(x => x.Id == userId).FirstOrDefaultAsync();
